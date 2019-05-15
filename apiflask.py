@@ -5,35 +5,35 @@ from flask import Flask, request, Response, render_template, jsonify
 app = Flask(__name__)
 
 def add_user(**kwargs):
-    print(kwargs)
-    id = kwargs['id']
+    id = int(kwargs['id'])
     name = kwargs['name']
-    age = kwargs['age']
+    age = int(kwargs['age'])
     type = kwargs['type']
-    parent = kwargs['parent']
+    parent = int(kwargs['parent'])
 
     pickle_in = open('users_file.data', "rb")
     data_in = pickle.load(pickle_in)
     pickle_in.close()
-    user_exists = False
+
+    list_of_id = list()
     for user in data_in:
-        if str(user['id']) == str(id):
-            user_exists = True
-    if not user_exists:
-        data_out = {'id': id, 'name': name, 'age': age, 'type': type, 'parent':parent}
-        data_in.append(data_out)
-        pickle_out = open('users_file.data', "wb")
-        pickle.dump(data_in,pickle_out)
-        pickle_out.close()
+        list_of_id.append(int(user['id']))
+    id = max(list_of_id) + 1
+
+    data_out = {'id': id, 'name': name, 'age': age, 'type': type, 'parent':parent}
+    data_in.append(data_out)
+    pickle_out = open('users_file.data', "wb")
+    pickle.dump(data_in,pickle_out)
+    pickle_out.close()
     return Response('{"status": "ok"}', status=200, mimetype='application/json')
 
 def update_user(**kwargs):
     print(kwargs)
-    id = kwargs['id']
+    id = int(kwargs['id'])
     name = kwargs['name']
-    age = kwargs['age']
+    age = int(kwargs['age'])
     type = kwargs['type']
-    parent = kwargs['parent']
+    parent = int(kwargs['parent'])
     pickle_in = open('users_file.data', "rb")
     data_in = pickle.load(pickle_in)
     pickle_in.close()
@@ -45,7 +45,6 @@ def update_user(**kwargs):
             user['age'] = age
             user['type'] = type
             user['parent'] = parent
-
         pickle_out = open('users_file.data', "wb")
         pickle.dump(data_in,pickle_out)
         pickle_out.close()
