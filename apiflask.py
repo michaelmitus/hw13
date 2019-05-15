@@ -1,17 +1,23 @@
 import pickle
 import json, pprint
-from flask import Flask, request, Response, render_template
-# jsonfy
+from flask import Flask, request, Response, render_template, jsonify
 
 app = Flask(__name__)
 
-def add_user(id,name,age,type,parent):
+def add_user(**kwargs):
+    print(kwargs)
+    id = kwargs['id']
+    name = kwargs['name']
+    age = kwargs['age']
+    type = kwargs['type']
+    parent = kwargs['parent']
+
     pickle_in = open('users_file.data', "rb")
     data_in = pickle.load(pickle_in)
     pickle_in.close()
     user_exists = False
     for user in data_in:
-        if user['id'] == id:
+        if str(user['id']) == str(id):
             user_exists = True
     if not user_exists:
         data_out = {'id': id, 'name': name, 'age': age, 'type': type, 'parent':parent}
@@ -22,6 +28,7 @@ def add_user(id,name,age,type,parent):
     return Response('{"status": "ok"}', status=200, mimetype='application/json')
 
 def update_user(**kwargs):
+    print(kwargs)
     id = kwargs['id']
     name = kwargs['name']
     age = kwargs['age']
@@ -32,7 +39,7 @@ def update_user(**kwargs):
     pickle_in.close()
     user_exists = False
     for user in data_in:
-        if user['id'] == id:
+        if str(user['id']) == str(id):
             user['id'] = id
             user['name'] = name
             user['age'] = age
@@ -57,14 +64,19 @@ def print_user(id):
     return Response('{"status": "ok"}', status=200, mimetype='application/json')
 
 def del_user(**kwargs):
-    id = kwargs['id']
+    idp = kwargs['id']
     pickle_in = open('users_file.data', "rb")
     data_in = pickle.load(pickle_in)
     data_out = data_in
-    for user in data_in:
-        if user['id'] == id:
-            data_out.remove(user)
     pickle_in.close()
+    for user in data_in:
+        print(user['id'])
+        print(idp)
+        if str(user['id']) == str(idp):
+            print(user)
+            print(idp)
+            data_out.remove(user)
+
     pickle_out = open('users_file.data', "wb")
     pickle.dump(data_out,pickle_out)
     pickle_out.close()
@@ -133,9 +145,17 @@ def users(*args, **kwars):
             </html>
             '''
     elif request.method == 'POST':
-        return add_user(**kwars)
+        return add_user(id=request.args['id'],
+                           name=request.args['name'],
+                           age=request.args['age'],
+                           type=request.args['type'],
+                           parent=request.args['parent'])
     elif request.method == 'PATCH':
-        return update_user(**kwars)
+        return update_user(id=request.args['id'],
+                           name=request.args['name'],
+                           age=request.args['age'],
+                           type=request.args['type'],
+                           parent=request.args['parent'])
     elif request.method == 'DELETE':
         return del_user(**kwars)
     else:
